@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:html' as html;
 import 'package:flutter/material.dart';
 import 'package:gemform/services/utils.dart';
@@ -27,6 +26,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   final TextEditingController _edCidade = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  String txEnviar='Enviar';
 
   final phoneMask = MaskTextInputFormatter(
     mask: '##-#-####-####',
@@ -52,16 +52,25 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
           Utils.nsBar(context, 'Celular Inválido', Colors.red);
           return;
         }
+        if(txEnviar!='Enviar'){
+          return;
+        }
         var user= await FirebaseService.getUserPhone(fone);
         if (user != null && user.isNotEmpty) {
           Utils.nsBar(context, 'Celular já cadastrado', Colors.red);
           return;
         }
+        setState(() {
+          txEnviar='AGUARDE POR FAVOR. ENVIANDO DADOS';
+        });
         await FirebaseService.salvarFormulario(
           nome,
           fone,
           cidade,
         );
+        setState(() {
+          txEnviar='DADOS ENVIADOS';
+        });
        // Utils.nsBar(context, 'Obrigado por ter informado seus dados', Colors.green);
         mostraApresentacao();
       }  catch (e) {
@@ -93,7 +102,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
   }
 
   Future<void> downloadPdf() async {
-    const url = "https://www.form.gem.net.br/arquivos/pccr.pdf";
+    const url = "https://www.form.gem.net.br/arquivos/pdf.pdf";
     html.window.open(url, "_blank");
   }
 
@@ -304,7 +313,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
             ),
             SizedBox(height: isMobile ? 15 : 20),
             AppButton(
-              text: 'Enviar',
+              text: txEnviar,
               onPressed: _login,
               isLoading: _isLoading,
               backgroundColor: Color(0xFF699A92),

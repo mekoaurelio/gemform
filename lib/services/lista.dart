@@ -1,6 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import '../widgets/texto.dart';
+import 'enviar_msg_whats.dart';
+import 'gera_pdf.dart';
+import 'gera_planilha.dart';
+
 class Lista extends StatefulWidget {
   const Lista({Key? key}) : super(key: key);
 
@@ -95,56 +100,102 @@ class _ListaState extends State<Lista> {
       body: Column(
         children: [
           Padding(
-              padding: const EdgeInsets.all(12),
-              child:
-              TextField(
-                controller: searchController,
-                decoration: InputDecoration(
-                  hintText: "Buscar por nome, telefone ou cidade...",
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                // TextField com Expanded para ocupar o espaço disponível
+                Expanded(
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: "Buscar por nome, telefone ou cidade...",
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                ///EXCEL
+                TextButton.icon(
+                  icon: const Icon(Icons.grid_on),
+                  label: const Text("Exportar Excel"),
+                  onPressed: () async {
+                    await gerarPlanilha(allData);
+                  },
+                ),
+                const SizedBox(width: 10),
+                /// PDF
+                TextButton.icon(
+                  icon: const Icon(Icons.picture_as_pdf),
+                  label: const Text("Exportar PDF"),
+                  onPressed: () async {
+                    await gerarPDF(allData);
+                  },
+                ),
+                const SizedBox(width: 10),
+                ///WHATS
+                /*
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    backgroundColor:Colors.green ,
+                  ) ,
+                  icon:  Image.asset(
+                    'assets/images/whatsapp.png',
+                    width: 20.0,  // Defina a largura desejada
+                    height: 20.0,  // Defina a altura desejada
+                  ),
+                  label:  Texto(tit:"Enviar WhatsApp",cor: Colors.white,),
+                  onPressed: () async {
+                    await enviarMensagensWhatsApp(
+                      allData,
+                      "Olá {nome}, tudo bem? Estou entrando em contato sobre seu cadastro.",
+                    );
+                  },
+                ),
+               
+                 */
 
+              ],
             ),
+          ),
 
           //LISTA
           Expanded(
             child: isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : SingleChildScrollView(
-                    scrollDirection: Axis.vertical,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: DataTable(
-                        headingRowColor: MaterialStateProperty.all(
-                          Colors.grey[200],
-                        ),
-                        columns: const [
-                          DataColumn(label: Text("Nome")),
-                          DataColumn(label: Text("Telefone")),
-                          DataColumn(label: Text("Cidade")),
-                        ],
-                        rows: paginatedData.map((item) {
-                          return DataRow(
-                            cells: [
-                              DataCell(Text(item['nome'])),
-                              DataCell(Text(item['fone'])),
-                              DataCell(Text(item['cidade'])),
-                            ],
-                          );
-                        }).toList(),
-                      ),
-                    ),
+              scrollDirection: Axis.vertical,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: DataTable(
+                  headingRowColor: MaterialStateProperty.all(
+                    Colors.grey[200],
                   ),
+                  columns: const [
+                    DataColumn(label: Text("Nome")),
+                    DataColumn(label: Text("Telefone")),
+                    DataColumn(label: Text("Cidade")),
+                  ],
+                  rows: paginatedData.map((item) {
+                    return DataRow(
+                      cells: [
+                        DataCell(Text(item['nome'])),
+                        DataCell(Text(item['fone'])),
+                        DataCell(Text(item['cidade'])),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
           ),
 
           // Rodapé
           Container(
             height: 50,
-            width: MediaQuery.of(context).size.width *0.44,
+            width: MediaQuery.of(context).size.width * 0.44,
             color: Colors.grey[200],
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Row(
